@@ -1,7 +1,7 @@
 # Git
 .git
 .gitignore
-.gitlab-ci.yaml
+.gitlab-ci.yml
 
 # Build Output
 target/
