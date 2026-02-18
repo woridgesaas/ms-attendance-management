@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/attendance_managemente
+    username: postgres
+    password: Asterix00
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+

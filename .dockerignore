@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+.gitlab-ci.yaml
+
+# Build Output
+target/
+build/
+
+# IDE / Editors
+.idea/
+.vscode/
+*.iml
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Environment / Secrets
+.env
+.env.*
+*.env
+
+# Docker Compose (not needed in image)
+compose*.yaml
+
+# Test reports
+surefire-reports/

@@ -1,0 +1,46 @@
+services:
+
+  database:
+    image: postgres:16
+    container_name: "database"
+    env_file:
+      - .env
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - database_data_prod:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - woridge-external-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: infra/Dockerfile
+    container_name: "ms-attendance-management"
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://database:${POSTGRES_PORT}/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${SERVER_PORT}:8080"
+    restart: always
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - woridge-external-network
+
+volumes:
+  database_data_prod:
+
+networks:
+  woridge-external-network:
+    external: true
