@@ -58,11 +58,11 @@ It also includes :
 * Utility layer
 * Infrastructure layer (Docker)
 
-This architecture ensures:
-✔ Separation of concerns
-✔ Maintainability
-✔ Scalability
-✔ Clean code structure
+This architecture ensures :
+* Separation of concerns
+* Maintainability
+* Scalability
+* Clean code structure
 
 ## **Security :**
 * Role-Based Access Control (RBAC)
