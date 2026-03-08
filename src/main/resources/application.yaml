@@ -1,6 +1,13 @@
 spring:
   application:
     name: ms-attendance-management
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    validate-on-migrate: true
+  profiles:
+    active: dev
 
 server:
   port: 8080
