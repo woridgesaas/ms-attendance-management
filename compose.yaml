@@ -2,7 +2,7 @@ services:
 
   database:
     image: postgres:16
-    container_name: "database"
+    container_name: "ms-attendance-database"
     env_file:
       - .env
     ports:
