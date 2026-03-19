@@ -1,9 +1,7 @@
 package org.woridge.ms_attendance_management.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,13 +15,15 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class WorkingDay {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // La date du jour ex: 2026-03-12
+    // Date du jour (ex: 2026-03-12)
     @Column(nullable = false)
     private LocalDate date;
 
@@ -32,12 +32,14 @@ public class WorkingDay {
     @Column(name = "check_in_time")
     private LocalTime checkInTime;
 
+
     // Heure de départ ex: 17:00
     // null tant que l'employé n'a pas encore pointé la sortie
     @Column(name = "check_out_time")
     private LocalTime checkOutTime;
 
-    // true si l'employé a travaillé plus de 8h
+
+    // Indique si overtime (> 8h)
     @Column(name = "is_overtime", nullable = false)
     private boolean overtime = false;
 
@@ -46,13 +48,15 @@ public class WorkingDay {
     @JoinColumn(name = "performed_by", nullable = false)
     private User performedBy;
 
+
     // Le manager qui a approuvé — peut être null
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "approved_by")
     private User approvedBy;
 
+
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false , nullable = false)
+    @Column(name = "created_at", updatable = false, nullable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
