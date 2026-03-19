@@ -1,12 +1,12 @@
-package org.woridge.ms_attendance_management.strategy.resolver;
+package org.woridge.ms_attendance_management.strategy.rfid.resolver;
 
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.woridge.ms_attendance_management.enumeration.ScanMode;
-import org.woridge.ms_attendance_management.strategy.ScanStrategy;
-import org.woridge.ms_attendance_management.strategy.implementation.AttendanceStrategyImpl;
-import org.woridge.ms_attendance_management.strategy.implementation.EnrollmentStrategyImpl;
+import org.woridge.ms_attendance_management.strategy.rfid.ScanStrategy;
+import org.woridge.ms_attendance_management.strategy.rfid.implementation.AttendanceStrategyImpl;
+import org.woridge.ms_attendance_management.strategy.rfid.implementation.EnrollmentStrategyImpl;
 
 import java.util.UUID;
 

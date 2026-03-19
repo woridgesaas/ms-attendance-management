@@ -1,4 +1,4 @@
-package org.woridge.ms_attendance_management.strategy.implementation;
+package org.woridge.ms_attendance_management.strategy.rfid.implementation;
 
 
 
@@ -14,7 +14,7 @@ import org.woridge.ms_attendance_management.exception.rfid.RfidCardAlreadyExists
 import org.woridge.ms_attendance_management.mapper.RfidCardMapper;
 import org.woridge.ms_attendance_management.repository.RfidCardRepository;
 import org.woridge.ms_attendance_management.repository.UserRepository;
-import org.woridge.ms_attendance_management.strategy.ScanStrategy;
+import org.woridge.ms_attendance_management.strategy.rfid.ScanStrategy;
 
 import java.util.UUID;
 

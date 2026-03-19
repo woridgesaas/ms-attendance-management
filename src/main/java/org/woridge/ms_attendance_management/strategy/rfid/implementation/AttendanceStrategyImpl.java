@@ -1,4 +1,4 @@
-package org.woridge.ms_attendance_management.strategy.implementation;
+package org.woridge.ms_attendance_management.strategy.rfid.implementation;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -11,7 +11,7 @@ import org.woridge.ms_attendance_management.exception.rfid.ScanTooFastException;
 import org.woridge.ms_attendance_management.mapper.RfidCardMapper;
 import org.woridge.ms_attendance_management.repository.RfidCardRepository;
 import org.woridge.ms_attendance_management.repository.WorkingDayRepository;
-import org.woridge.ms_attendance_management.strategy.ScanStrategy;
+import org.woridge.ms_attendance_management.strategy.rfid.ScanStrategy;
 
 import java.time.Duration;
 import java.time.LocalDate;
