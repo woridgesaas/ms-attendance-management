@@ -7,10 +7,16 @@ spring:
   flyway:
     validate-on-migrate: true
   profiles:
-    active: dev
+    active: ${ACTIVE_PROFILE}
 
 server:
   port: 8082
   address: 0.0.0.0
   servlet:
-    context-path: /
+    context-path: /api/attendance
+
+attendance:
+  business:
+    justification-deadline-days: 3
+    rh-alert-threshold: 2
+    ceo-alert-threshold: 3

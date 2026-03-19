@@ -9,7 +9,7 @@ import org.woridge.ms_attendance_management.dto.rfid.ScanRequest;
 import org.woridge.ms_attendance_management.dto.rfid.ScanResponse;
 import org.woridge.ms_attendance_management.enumeration.ScanMode;
 import org.woridge.ms_attendance_management.repository.RfidCardRepository;
-import org.woridge.ms_attendance_management.strategy.resolver.ScanStrategyResolver;
+import org.woridge.ms_attendance_management.strategy.rfid.resolver.ScanStrategyResolver;
 
 import java.util.UUID;
 

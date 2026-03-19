@@ -4,64 +4,97 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.woridge.ms_attendance_management.dto.ErrorResponse;
+import org.woridge.ms_attendance_management.enumeration.ErrorCode;
+import org.woridge.ms_attendance_management.exception.absence.AbsenceFinalStateException;
+import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundException;
+import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
 import org.woridge.ms_attendance_management.exception.rfid.EmployeeAlreadyHasCardException;
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardAlreadyExistsException;
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardNotFoundException;
 import org.woridge.ms_attendance_management.exception.rfid.ScanTooFastException;
 
-import java.time.OffsetDateTime;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-@RestControllerAdvice  // intercepte toutes les exceptions de tous les controllers
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // Carte inconnue → 404
+    // ─── RFID ─────────────────────────────────────────────────────
+
     @ExceptionHandler(RfidCardNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleCardNotFound(
+    public ResponseEntity<ErrorResponse<String>> handleRfidCardNotFoundException(
             RfidCardNotFoundException ex) {
-        return buildResponse(HttpStatus.NOT_FOUND, ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.RFID_CARD_NOT_FOUND
+                ));
     }
 
-    // Carte déjà enregistrée → 409 Conflict
     @ExceptionHandler(RfidCardAlreadyExistsException.class)
-    public ResponseEntity<Map<String, Object>> handleCardAlreadyExists(
+    public ResponseEntity<ErrorResponse<String>> handleRfidCardAlreadyExistsException(
             RfidCardAlreadyExistsException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.RFID_CARD_ALREADY_EXISTS
+                ));
     }
 
-    // Employé a déjà une carte → 409 Conflict
     @ExceptionHandler(EmployeeAlreadyHasCardException.class)
-    public ResponseEntity<Map<String, Object>> handleEmployeeAlreadyHasCard(
+    public ResponseEntity<ErrorResponse<String>> handleEmployeeAlreadyHasCardException(
             EmployeeAlreadyHasCardException ex) {
-        return buildResponse(HttpStatus.CONFLICT, ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.EMPLOYEE_ALREADY_HAS_CARD
+                ));
     }
 
-    // Scan trop rapide → 429 Too Many Requests
     @ExceptionHandler(ScanTooFastException.class)
-    public ResponseEntity<Map<String, Object>> handleScanTooFast(
+    public ResponseEntity<ErrorResponse<String>> handleScanTooFastException(
             ScanTooFastException ex) {
-        return buildResponse(HttpStatus.TOO_MANY_REQUESTS, ex.getMessage());
+        return ResponseEntity
+                .status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.SCAN_TOO_FAST
+                ));
     }
 
-    // Toute autre exception non gérée → 500
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
-        ex.printStackTrace();
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                "Une erreur interne est survenue");
+    // ─── ABSENCE ──────────────────────────────────────────────────
+
+    @ExceptionHandler(AbsenceNotFoundException.class)
+    public ResponseEntity<ErrorResponse<String>> handleAbsenceNotFoundException(
+            AbsenceNotFoundException ex) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.ABSENCE_NOT_FOUND
+                ));
     }
 
-    // Méthode utilitaire — construit la réponse JSON
-    private ResponseEntity<Map<String, Object>> buildResponse(
-            HttpStatus status, String message) {
+    @ExceptionHandler(AbsenceFinalStateException.class)
+    public ResponseEntity<ErrorResponse<String>> handleAbsenceFinalStateException(
+            AbsenceFinalStateException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.ABSENCE_FINAL_STATE
+                ));
+    }
 
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("timestamp", OffsetDateTime.now());
-        body.put("status", status.value());
-        body.put("error", status.getReasonPhrase());
-        body.put("message", message);
-
-        return ResponseEntity.status(status).body(body);
+    @ExceptionHandler(BusinessParameterException.class)
+    public ResponseEntity<ErrorResponse<String>> handleBusinessParameterException(
+            BusinessParameterException ex) {
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.BUSINESS_PARAMETER_INVALID
+                ));
     }
 }
