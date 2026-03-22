@@ -8,13 +8,23 @@ spring:
     validate-on-migrate: true
   profiles:
     active: ${ACTIVE_PROFILE}
-
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASSWORD}
+rabbitmq:
+    exchange: notification.exchange
+    routing-keys:
+      absence-alert-rh:  notification.absence.alert.rh
+      absence-alert-ceo: notification.absence.alert.ceo
 server:
   port: 8082
   address: 0.0.0.0
   servlet:
     context-path: /api/attendance
 
+#future:ms-parametrage
 attendance:
   business:
     justification-deadline-days: 3

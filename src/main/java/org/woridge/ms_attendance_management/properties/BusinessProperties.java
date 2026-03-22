@@ -1,4 +1,4 @@
-package org.woridge.ms_attendance_management.propreties;
+package org.woridge.ms_attendance_management.properties;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -13,6 +13,7 @@ import org.woridge.ms_attendance_management.exception.rfid.EmployeeAlreadyHasCar
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardAlreadyExistsException;
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardNotFoundException;
 import org.woridge.ms_attendance_management.exception.rfid.ScanTooFastException;
+import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -66,35 +67,42 @@ public class GlobalExceptionHandler {
     // ─── ABSENCE ──────────────────────────────────────────────────
 
     @ExceptionHandler(AbsenceNotFoundException.class)
-    public ResponseEntity<ErrorResponse<String>> handleAbsenceNotFoundException(
-            AbsenceNotFoundException ex) {
+    public ResponseEntity<ErrorResponse<String>> handleAbsenceNotFoundException(AbsenceNotFoundException exception) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.createErrorResponse(
-                        ex.getMessage(),
+                        exception.getMessage(),
                         ErrorCode.ABSENCE_NOT_FOUND
                 ));
     }
 
     @ExceptionHandler(AbsenceFinalStateException.class)
-    public ResponseEntity<ErrorResponse<String>> handleAbsenceFinalStateException(
-            AbsenceFinalStateException ex) {
+    public ResponseEntity<ErrorResponse<String>> handleAbsenceFinalStateException(AbsenceFinalStateException exception) {
         return ResponseEntity
                 .status(HttpStatus.CONFLICT)
                 .body(ErrorResponse.createErrorResponse(
-                        ex.getMessage(),
+                        exception.getMessage(),
                         ErrorCode.ABSENCE_FINAL_STATE
                 ));
     }
 
     @ExceptionHandler(BusinessParameterException.class)
-    public ResponseEntity<ErrorResponse<String>> handleBusinessParameterException(
-            BusinessParameterException ex) {
+    public ResponseEntity<ErrorResponse<String>> handleBusinessParameterException(BusinessParameterException exception) {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.createErrorResponse(
-                        ex.getMessage(),
+                        exception.getMessage(),
                         ErrorCode.BUSINESS_PARAMETER_INVALID
+                ));
+    }
+    
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ErrorResponse<String>> handleUserNotFoundException(UserNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.createErrorResponse(
+                        exception.getMessage(),
+                        ErrorCode.USERNOTFOUND
                 ));
     }
 }
