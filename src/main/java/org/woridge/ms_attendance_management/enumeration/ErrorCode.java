@@ -15,4 +15,7 @@ public enum ErrorCode {
     // Business config
     BUSINESS_PARAMETER_INVALID,
 
+    //USER
+    USERNOTFOUND
+
 }

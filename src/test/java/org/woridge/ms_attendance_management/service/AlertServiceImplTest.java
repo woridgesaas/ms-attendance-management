@@ -10,14 +10,17 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.woridge.ms_attendance_management.enumeration.AlertLevel;
 import org.woridge.ms_attendance_management.enumeration.AlertResult;
+import org.woridge.ms_attendance_management.messaging.event.AbsenceAlertEvent;
+import org.woridge.ms_attendance_management.messaging.publisher.AbsenceAlertPublisher;
 import org.woridge.ms_attendance_management.model.AbsenceAlert;
 import org.woridge.ms_attendance_management.model.User;
-import org.woridge.ms_attendance_management.propreties.BusinessProperties;
+import org.woridge.ms_attendance_management.properties.BusinessProperties;
 import org.woridge.ms_attendance_management.repository.AbsenceAlertRepository;
 import org.woridge.ms_attendance_management.repository.UserRepository;
 import org.woridge.ms_attendance_management.service.implementation.AlertServiceImpl;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -29,14 +32,10 @@ import static org.mockito.Mockito.*;
 @DisplayName("AlertService — unit tests")
 class AlertServiceImplTest {
 
-    @Mock
-    private AbsenceAlertRepository absenceAlertRepository;
-
-    @Mock
-    private BusinessProperties businessProperties;
-
-    @Mock
-    private UserRepository userRepository;
+    @Mock private AbsenceAlertRepository absenceAlertRepository;
+    @Mock private BusinessProperties     businessProperties;
+    @Mock private UserRepository         userRepository;
+    @Mock private AbsenceAlertPublisher absenceAlertPublisher; // ✅ interface
 
     @InjectMocks
     private AlertServiceImpl alertService;
@@ -47,10 +46,11 @@ class AlertServiceImplTest {
     @BeforeEach
     void setUp() {
         userId = UUID.randomUUID();
-
-        // Mock du User retourné par getReferenceById
         mockUser = User.builder()
                 .id(userId)
+                .firstName("Ahmed")
+                .lastName("Benali")
+                .email("ahmed.benali@woridge.com")
                 .build();
     }
 
@@ -68,6 +68,7 @@ class AlertServiceImplTest {
 
         assertThat(result).isEqualTo(AlertResult.NO_THRESHOLD);
         verify(absenceAlertRepository, never()).save(any());
+        verify(absenceAlertPublisher, never()).publish(any()); // ✅ une seule méthode
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -75,7 +76,7 @@ class AlertServiceImplTest {
     // ─────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Should trigger RH alert and return TRIGGERED")
+    @DisplayName("Should trigger RH alert, save in DB and publish event")
     void shouldTriggerRhAlertWhenThresholdReached() {
         when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
         when(businessProperties.getRhAlertThreshold()).thenReturn(2);
@@ -83,17 +84,29 @@ class AlertServiceImplTest {
                 eq(userId), eq(AlertLevel.RH), any(LocalDateTime.class), any(LocalDateTime.class)
         )).thenReturn(false);
         when(userRepository.getReferenceById(userId)).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
         AlertResult result = alertService.evaluate(userId, 2);
 
         assertThat(result).isEqualTo(AlertResult.TRIGGERED);
 
-        ArgumentCaptor<AbsenceAlert> captor = ArgumentCaptor.forClass(AbsenceAlert.class);
-        verify(absenceAlertRepository).save(captor.capture());
+        // ✅ sauvegarde en base
+        ArgumentCaptor<AbsenceAlert> alertCaptor = ArgumentCaptor.forClass(AbsenceAlert.class);
+        verify(absenceAlertRepository).save(alertCaptor.capture());
+        assertThat(alertCaptor.getValue().getAlertLevel()).isEqualTo(AlertLevel.RH);
+        assertThat(alertCaptor.getValue().getUser().getId()).isEqualTo(userId);
+        assertThat(alertCaptor.getValue().getConsecutiveDays()).isEqualTo(2);
 
-        assertThat(captor.getValue().getAlertLevel()).isEqualTo(AlertLevel.RH);
-        assertThat(captor.getValue().getUser().getId()).isEqualTo(userId); // ✅ corrigé
-        assertThat(captor.getValue().getConsecutiveDays()).isEqualTo(2);
+        // ✅ publisher appelé avec AbsenceAlertEvent niveau RH
+        ArgumentCaptor<AbsenceAlertEvent> eventCaptor =
+                ArgumentCaptor.forClass(AbsenceAlertEvent.class);
+        verify(absenceAlertPublisher).publish(eventCaptor.capture());
+
+        AbsenceAlertEvent event = eventCaptor.getValue();
+        assertThat(event.employeeFullName()).isEqualTo("Ahmed Benali");
+        assertThat(event.employeeEmail()).isEqualTo("ahmed.benali@woridge.com");
+        assertThat(event.consecutiveDays()).isEqualTo(2);
+        assertThat(event.alertLevel()).isEqualTo(AlertLevel.RH); // ✅ vérifier le niveau
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -101,24 +114,36 @@ class AlertServiceImplTest {
     // ─────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Should trigger CEO alert and return TRIGGERED")
+    @DisplayName("Should trigger CEO alert, save in DB and publish event")
     void shouldTriggerCeoAlertWhenThresholdReached() {
         when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
         when(absenceAlertRepository.existsByUserIdAndAlertLevelAndTriggeredAtBetween(
                 eq(userId), eq(AlertLevel.CEO), any(LocalDateTime.class), any(LocalDateTime.class)
         )).thenReturn(false);
         when(userRepository.getReferenceById(userId)).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
 
         AlertResult result = alertService.evaluate(userId, 3);
 
         assertThat(result).isEqualTo(AlertResult.TRIGGERED);
 
-        ArgumentCaptor<AbsenceAlert> captor = ArgumentCaptor.forClass(AbsenceAlert.class);
-        verify(absenceAlertRepository).save(captor.capture());
+        // ✅ sauvegarde en base
+        ArgumentCaptor<AbsenceAlert> alertCaptor = ArgumentCaptor.forClass(AbsenceAlert.class);
+        verify(absenceAlertRepository).save(alertCaptor.capture());
+        assertThat(alertCaptor.getValue().getAlertLevel()).isEqualTo(AlertLevel.CEO);
+        assertThat(alertCaptor.getValue().getUser().getId()).isEqualTo(userId);
+        assertThat(alertCaptor.getValue().getConsecutiveDays()).isEqualTo(3);
 
-        assertThat(captor.getValue().getAlertLevel()).isEqualTo(AlertLevel.CEO);
-        assertThat(captor.getValue().getUser().getId()).isEqualTo(userId); // ✅ corrigé
-        assertThat(captor.getValue().getConsecutiveDays()).isEqualTo(3);
+        // ✅ publisher appelé avec AbsenceAlertEvent niveau CEO
+        ArgumentCaptor<AbsenceAlertEvent> eventCaptor =
+                ArgumentCaptor.forClass(AbsenceAlertEvent.class);
+        verify(absenceAlertPublisher).publish(eventCaptor.capture());
+
+        AbsenceAlertEvent event = eventCaptor.getValue();
+        assertThat(event.employeeFullName()).isEqualTo("Ahmed Benali");
+        assertThat(event.employeeEmail()).isEqualTo("ahmed.benali@woridge.com");
+        assertThat(event.consecutiveDays()).isEqualTo(3);
+        assertThat(event.alertLevel()).isEqualTo(AlertLevel.CEO); // ✅ vérifier le niveau
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -126,7 +151,7 @@ class AlertServiceImplTest {
     // ─────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Should return SKIPPED_ALREADY_TRIGGERED when RH alert already triggered today")
+    @DisplayName("Should return SKIPPED and not publish when RH alert already triggered today")
     void shouldNotTriggerDuplicateRhAlert() {
         when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
         when(businessProperties.getRhAlertThreshold()).thenReturn(2);
@@ -138,36 +163,15 @@ class AlertServiceImplTest {
 
         assertThat(result).isEqualTo(AlertResult.SKIPPED_ALREADY_TRIGGERED);
         verify(absenceAlertRepository, never()).save(any());
+        verify(absenceAlertPublisher, never()).publish(any());
     }
 
     // ─────────────────────────────────────────────────────────────
-    // Cas : CEO threshold — une seule alerte déclenchée
+    // Cas : alerte CEO déjà déclenchée aujourd'hui
     // ─────────────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("Should trigger only CEO alert when CEO threshold is reached")
-    void shouldTriggerOnlyCeoAlertWhenCeoThresholdReached() {
-        when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
-        when(absenceAlertRepository.existsByUserIdAndAlertLevelAndTriggeredAtBetween(
-                eq(userId), eq(AlertLevel.CEO), any(LocalDateTime.class), any(LocalDateTime.class)
-        )).thenReturn(false);
-        when(userRepository.getReferenceById(userId)).thenReturn(mockUser);
-
-        AlertResult result = alertService.evaluate(userId, 5);
-
-        assertThat(result).isEqualTo(AlertResult.TRIGGERED);
-
-        ArgumentCaptor<AbsenceAlert> captor = ArgumentCaptor.forClass(AbsenceAlert.class);
-        verify(absenceAlertRepository, times(1)).save(captor.capture());
-        assertThat(captor.getValue().getAlertLevel()).isEqualTo(AlertLevel.CEO);
-    }
-
-    // ─────────────────────────────────────────────────────────────
-    // Cas : CEO already triggered
-    // ─────────────────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("Should return SKIPPED_ALREADY_TRIGGERED when CEO alert already triggered today")
+    @DisplayName("Should return SKIPPED and not publish when CEO alert already triggered today")
     void shouldNotTriggerDuplicateCeoAlert() {
         when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
         when(absenceAlertRepository.existsByUserIdAndAlertLevelAndTriggeredAtBetween(
@@ -178,5 +182,34 @@ class AlertServiceImplTest {
 
         assertThat(result).isEqualTo(AlertResult.SKIPPED_ALREADY_TRIGGERED);
         verify(absenceAlertRepository, never()).save(any());
+        verify(absenceAlertPublisher, never()).publish(any());
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Cas : CEO threshold — une seule alerte déclenchée (pas RH)
+    // ─────────────────────────────────────────────────────────────
+
+    @Test
+    @DisplayName("Should trigger only CEO alert when CEO threshold is reached")
+    void shouldTriggerOnlyCeoAlertWhenCeoThresholdReached() {
+        when(businessProperties.getCeoAlertThreshold()).thenReturn(3);
+        when(absenceAlertRepository.existsByUserIdAndAlertLevelAndTriggeredAtBetween(
+                eq(userId), eq(AlertLevel.CEO), any(LocalDateTime.class), any(LocalDateTime.class)
+        )).thenReturn(false);
+        when(userRepository.getReferenceById(userId)).thenReturn(mockUser);
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+
+        AlertResult result = alertService.evaluate(userId, 5);
+
+        assertThat(result).isEqualTo(AlertResult.TRIGGERED);
+
+        // ✅ une seule sauvegarde
+        verify(absenceAlertRepository, times(1)).save(any());
+
+        // ✅ publish appelé une seule fois avec niveau CEO
+        ArgumentCaptor<AbsenceAlertEvent> captor =
+                ArgumentCaptor.forClass(AbsenceAlertEvent.class);
+        verify(absenceAlertPublisher, times(1)).publish(captor.capture());
+        assertThat(captor.getValue().alertLevel()).isEqualTo(AlertLevel.CEO);
     }
 }

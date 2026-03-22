@@ -6,14 +6,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.woridge.ms_attendance_management.dto.absence.AbsenceProcessingRequest;
 import org.woridge.ms_attendance_management.dto.absence.AbsenceResponse;
 import org.woridge.ms_attendance_management.enumeration.AbsenceType;
-import org.woridge.ms_attendance_management.enumeration.AlertResult;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundException;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
 import org.woridge.ms_attendance_management.handler.AbsenceHandler;
 import org.woridge.ms_attendance_management.mapper.AbsenceMapper;
 import org.woridge.ms_attendance_management.model.Absence;
 import org.woridge.ms_attendance_management.model.User;
-import org.woridge.ms_attendance_management.propreties.BusinessProperties;
+import org.woridge.ms_attendance_management.properties.BusinessProperties;
 import org.woridge.ms_attendance_management.repository.AbsenceRepository;
 import org.woridge.ms_attendance_management.repository.UserRepository;
 import org.woridge.ms_attendance_management.service.AbsenceProcessingService;
@@ -28,13 +27,13 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class AbsenceProcessingServiceImpl implements AbsenceProcessingService {
 
-    private final AbsenceRepository      absenceRepository;
-    private final UserRepository         userRepository;
-    private final AbsenceHandler         absenceHandlerChain;
+    private final AbsenceRepository absenceRepository;
+    private final UserRepository userRepository;
+    private final AbsenceHandler absenceHandlerChain;
     private final ConsecutiveAbsenceService consecutiveAbsenceService;
-    private final AlertService           alertService;
-    private final BusinessProperties     businessProperties;
-    private final AbsenceMapper          absenceMapper;
+    private final AlertService alertService;
+    private final BusinessProperties businessProperties;
+    private final AbsenceMapper absenceMapper;
 
     @Override
     @Transactional
@@ -61,13 +60,16 @@ public class AbsenceProcessingServiceImpl implements AbsenceProcessingService {
                 .handle(request.userId(), request.date());
 
         // ── 5. Calcul jours consécutifs ───────────────────────────
+        // PENDING_JUSTIFICATION → isJustified() = false → on calcule
+        // mais on ne déclenche pas d'alerte
         int consecutiveDays = absenceType.isJustified()
                 ? 0
                 : consecutiveAbsenceService.calculate(request.userId(), request.date());
 
         // ── 6. Vérification seuil critique → UNJUSTIFIED_FINAL ────
+       // PENDING_JUSTIFICATION → isUnjustified() = false → jamais FINAL
         boolean isFinal = consecutiveDays >= businessProperties.getCeoAlertThreshold()
-                && absenceType.isUnjustified();
+                && absenceType.isUnjustified(); // ✅ PENDING ne devient pas FINAL
 
         if (isFinal) {
             absenceType = AbsenceType.UNJUSTIFIED_FINAL;
@@ -83,9 +85,11 @@ public class AbsenceProcessingServiceImpl implements AbsenceProcessingService {
                 consecutiveDays
         );
 
-        // ── 8. Évaluation alertes ─────────────────────────────────
-        if (!absenceType.isJustified()) {
-            AlertResult alertResult = alertService.evaluate(request.userId(), consecutiveDays);
+
+     // ── 8. Évaluation alertes ─────────────────────────────────
+    // PENDING_JUSTIFICATION → pas d'alerte
+        if (absenceType.isUnjustified()) {
+            alertService.evaluate(request.userId(), consecutiveDays);
         }
 
         // ── 9. Mapping entity → DTO ───────────────────────────────
