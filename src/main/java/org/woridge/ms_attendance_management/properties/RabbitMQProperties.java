@@ -13,4 +13,5 @@ public class RabbitMQProperties {
 
     private String exchange;
     private RabbitMQRoutingKeysProperties routingKeys;
+    private String holidayQueue;
 }
