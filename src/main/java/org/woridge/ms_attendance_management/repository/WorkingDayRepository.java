@@ -14,8 +14,7 @@ import java.util.UUID;
 @Repository
 public interface WorkingDayRepository extends JpaRepository<WorkingDay, UUID> {
 
-    List<WorkingDay> findByPerformedBy(UUID userId);
-    @Query("""
+    List<WorkingDay> findByPerformedBy_Id(UUID userId);    @Query("""
 SELECT w 
 FROM WorkingDay w
 WHERE w.performedBy = :userId

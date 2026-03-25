@@ -1,8 +1,9 @@
-package org.woridge.ms_attendance_management.dto;
+package org.woridge.ms_attendance_management.dto.WorkingDay;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import lombok.*;
+import org.woridge.ms_attendance_management.enumeration.AttendanceStatus;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -24,7 +25,7 @@ public class AttendanceResponse {
     private LocalTime exit;
 
     @NotNull(message = "Attendance status is required")
-    private String status;
+    private AttendanceStatus status;
 
     @PositiveOrZero(message = "Production hours must be positive")
     private double productionHours;

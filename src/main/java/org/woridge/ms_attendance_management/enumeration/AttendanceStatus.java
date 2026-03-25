@@ -4,7 +4,12 @@ public enum AttendanceStatus {
 
     PRESENT,
     ABSENT,
-    WARNING,
-    OVERTIME
+    LATE,//Employee checked in later than the allowed standard time.
+    EARLY_LEAVE,//Employee left earlier than the expected end time
+    HALF_DAY,//Employee worked only a partial day
+    UNDER_TIME,//Employee worked less than the minimum expected hours
+    OVERTIME,
+    WEEKEND,//Day is a weekend and no normal attendance is expected
+    HOLIDAY
 
 }
