@@ -38,7 +38,7 @@ public class AttendanceStrategyImpl implements ScanStrategy {
 
         // 2. Pointage existant aujourd'hui ?
         Optional<WorkingDay> existingDay = workingDayRepository
-                .findByPerformedByIdAndDate(
+                .findByPerformedBy_IdAndDate(
                         card.getEmployee().getId(),
                         LocalDate.now()
                 );

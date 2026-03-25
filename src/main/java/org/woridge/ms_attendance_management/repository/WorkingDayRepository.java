@@ -14,22 +14,19 @@ import java.util.UUID;
 @Repository
 public interface WorkingDayRepository extends JpaRepository<WorkingDay, UUID> {
 
-    List<WorkingDay> findByPerformedBy_Id(UUID userId);    @Query("""
-SELECT w 
-FROM WorkingDay w
-WHERE w.performedBy = :userId
-AND w.date BETWEEN :start AND :end
-""")
-    List<WorkingDay> findWeek(
+    List<WorkingDay> findByPerformedBy_Id(UUID userId);
+
+    @Query("""
+        SELECT w 
+        FROM WorkingDay w
+        WHERE w.performedBy.id = :userId
+        AND w.date BETWEEN :start AND :end
+    """)
+    List<WorkingDay> findBetweenDates(
             @Param("userId") UUID userId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end
     );
-    @Query("SELECT w FROM WorkingDay w WHERE w.performedBy.id = :employeeId AND w.date = :date ORDER BY w.createdAt DESC LIMIT 1")
-    Optional<WorkingDay> findByPerformedByIdAndDate(
-            @Param("employeeId") UUID employeeId,
-            @Param("date") LocalDate date
-    );
-    Optional<WorkingDay> findByPerformedByAndDate(UUID userId, LocalDate date);
 
+    Optional<WorkingDay> findByPerformedBy_IdAndDate(UUID userId, LocalDate date);
 }

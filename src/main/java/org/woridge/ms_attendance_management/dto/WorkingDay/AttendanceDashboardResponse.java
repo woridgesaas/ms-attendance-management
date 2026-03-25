@@ -11,14 +11,14 @@ import lombok.*;
 public class AttendanceDashboardResponse {
 
     @PositiveOrZero(message = "Today hours must be positive")
-    private double todayHours;
+    private HoursWithLimit  today;
 
     @PositiveOrZero(message = "Week hours must be positive")
-    private double weekHours;
+    private HoursWithLimit  week;
 
     @PositiveOrZero(message = "Month hours must be positive")
-    private double monthHours;
+    private HoursWithLimit  month;
 
     @PositiveOrZero(message = "Overtime hours must be positive")
-    private double overtimeHours;
+    private HoursWithLimit overtimeHours;
 }

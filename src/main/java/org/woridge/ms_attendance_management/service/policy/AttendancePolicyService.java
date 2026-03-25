@@ -3,7 +3,7 @@ package org.woridge.ms_attendance_management.service.policy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.woridge.ms_attendance_management.enumeration.AttendanceStatus;
-import org.woridge.ms_attendance_management.integration.holiday.HolidayClient;
+import org.woridge.ms_attendance_management.repository.HolidayRepository;
 
 import java.time.Duration;
 import java.time.LocalDate;
@@ -16,7 +16,8 @@ import java.time.LocalTime;
 @RequiredArgsConstructor
 public class AttendancePolicyService {
 
-    private final HolidayClient holidayClient;
+    private final HolidayRepository holidayRepository;
+
 
     private static final double STANDARD_WORKING_HOURS = 8.0;
     private static final LocalTime START = LocalTime.of(9, 0);
@@ -39,9 +40,8 @@ public class AttendancePolicyService {
     }
 
     public boolean isHoliday(LocalDate date) {
-        return holidayClient.isHoliday(date);
+        return holidayRepository.existsByDate(date);
     }
-
     public double calculateProductiveHours(LocalDate date, double worked) {
 
         if (isWeekend(date) || isHoliday(date)) return 0;

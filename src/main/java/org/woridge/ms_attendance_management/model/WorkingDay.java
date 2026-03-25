@@ -41,7 +41,7 @@ public class WorkingDay {
 
     // Indique si overtime (> 8h)
     @Column(name = "is_overtime", nullable = false)
-    private boolean overtime = false;
+    private boolean overtime ;
 
     // L'employé qui a pointé — obligatoire
     @ManyToOne(fetch = FetchType.LAZY)

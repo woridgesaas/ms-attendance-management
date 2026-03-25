@@ -1,6 +1,7 @@
 package org.woridge.ms_attendance_management.service;
 
 import org.woridge.ms_attendance_management.dto.WorkingDay.AttendanceChartResponse;
+import org.woridge.ms_attendance_management.dto.WorkingDay.AttendanceDashboardResponse;
 import org.woridge.ms_attendance_management.dto.WorkingDay.AttendanceResponse;
 
 import java.util.List;
@@ -17,6 +18,9 @@ public interface AttendanceService {
     AttendanceChartResponse getTodayChart(UUID userId);
 
     double calculateTodayHours(UUID userId);
+
+    AttendanceDashboardResponse getDashboard(UUID userId);
+
 
 
 }
