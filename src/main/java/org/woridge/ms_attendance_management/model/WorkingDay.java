@@ -1,9 +1,7 @@
 package org.woridge.ms_attendance_management.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,6 +15,8 @@ import java.util.UUID;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class WorkingDay {
 
     @Id
@@ -36,7 +36,6 @@ public class WorkingDay {
     // null tant que l'employé n'a pas encore pointé la sortie
     @Column(name = "check_out_time")
     private LocalTime checkOutTime;
-
 
     // L'employé qui a pointé — obligatoire
     @ManyToOne(fetch = FetchType.LAZY)

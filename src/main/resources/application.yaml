@@ -14,10 +14,12 @@ spring:
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
 rabbitmq:
-    exchange: notification.exchange
-    routing-keys:
-      absence-alert-rh:  notification.absence.alert.rh
-      absence-alert-ceo: notification.absence.alert.ceo
+  exchange: woridge.exchange
+  routing-keys:
+    absence-alert-rh:  notification.absence.alert.rh
+    absence-alert-ceo: notification.absence.alert.ceo
+    holiday-created: holiday.created
+  holiday-queue: holiday.queue
 server:
   port: 8082
   address: 0.0.0.0
@@ -30,3 +32,7 @@ attendance:
     justification-deadline-days: 3
     rh-alert-threshold: 2
     ceo-alert-threshold: 3
+
+    daily-max-hours: 9
+    weekly-max-hours: 40
+    monthly-max-hours: 98
