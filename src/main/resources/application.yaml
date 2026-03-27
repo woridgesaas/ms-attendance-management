@@ -7,7 +7,7 @@ spring:
   flyway:
     validate-on-migrate: true
   profiles:
-    active: ${ACTIVE_PROFILE}
+    active: ${ACTIVE_PROFILE:dev}
   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT}

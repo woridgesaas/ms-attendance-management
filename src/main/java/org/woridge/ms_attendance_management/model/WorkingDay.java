@@ -37,19 +37,12 @@ public class WorkingDay {
     @Column(name = "check_out_time")
     private LocalTime checkOutTime;
 
-    // true si l'employé a travaillé plus de 8h
-    @Column(name = "is_overtime", nullable = false)
-    private boolean overtime = false;
 
     // L'employé qui a pointé — obligatoire
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "performed_by", nullable = false)
     private User performedBy;
 
-    // Le manager qui a approuvé — peut être null
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by")
-    private User approvedBy;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false , nullable = false)
@@ -58,4 +51,6 @@ public class WorkingDay {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+    @OneToOne(mappedBy = "workingDay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Overtime overtime;
 }
