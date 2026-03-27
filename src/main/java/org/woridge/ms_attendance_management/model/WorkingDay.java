@@ -23,7 +23,7 @@ public class WorkingDay {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    // Date du jour (ex: 2026-03-12)
+    // La date du jour ex: 2026-03-12
     @Column(nullable = false)
     private LocalDate date;
 
@@ -32,16 +32,10 @@ public class WorkingDay {
     @Column(name = "check_in_time")
     private LocalTime checkInTime;
 
-
     // Heure de départ ex: 17:00
     // null tant que l'employé n'a pas encore pointé la sortie
     @Column(name = "check_out_time")
     private LocalTime checkOutTime;
-
-
-    // Indique si overtime (> 8h)
-    @Column(name = "is_overtime", nullable = false)
-    private boolean overtime ;
 
     // L'employé qui a pointé — obligatoire
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,17 +43,13 @@ public class WorkingDay {
     private User performedBy;
 
 
-    // Le manager qui a approuvé — peut être null
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "approved_by")
-    private User approvedBy;
-
-
     @CreationTimestamp
-    @Column(name = "created_at", updatable = false, nullable = false)
+    @Column(name = "created_at", updatable = false , nullable = false)
     private OffsetDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+    @OneToOne(mappedBy = "workingDay", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Overtime overtime;
 }

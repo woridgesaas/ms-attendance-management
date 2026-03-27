@@ -11,6 +11,7 @@ import org.woridge.ms_attendance_management.exception.rfid.ScanTooFastException;
 import org.woridge.ms_attendance_management.mapper.RfidCardMapper;
 import org.woridge.ms_attendance_management.repository.RfidCardRepository;
 import org.woridge.ms_attendance_management.repository.WorkingDayRepository;
+import org.woridge.ms_attendance_management.service.OvertimeProcessingService;
 import org.woridge.ms_attendance_management.strategy.rfid.ScanStrategy;
 
 import java.time.Duration;
@@ -26,6 +27,7 @@ public class AttendanceStrategyImpl implements ScanStrategy {
     private final WorkingDayRepository workingDayRepository;
     private final RfidCardMapper rfidCardMapper;
 
+    private final OvertimeProcessingService overtimeProcessingService;
     private static final int MIN_DELAY_MINUTES = 2;
 
     @Override
@@ -63,6 +65,7 @@ public class AttendanceStrategyImpl implements ScanStrategy {
             if (workingDay.getCheckOutTime() == null) {
                 workingDay.setCheckOutTime(LocalTime.now());
                 workingDayRepository.save(workingDay);
+                overtimeProcessingService.detectAndCreate(workingDay);
                 return rfidCardMapper.toCheckOutResponse(card, workingDay);
             }
         }

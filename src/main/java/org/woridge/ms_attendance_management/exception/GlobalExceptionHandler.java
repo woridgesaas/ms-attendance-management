@@ -8,6 +8,8 @@ import org.woridge.ms_attendance_management.dto.ErrorResponse;
 import org.woridge.ms_attendance_management.enumeration.ErrorCode;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceFinalStateException;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundException;
+import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
+import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
 import org.woridge.ms_attendance_management.exception.rfid.EmployeeAlreadyHasCardException;
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardAlreadyExistsException;
@@ -104,5 +106,24 @@ public class GlobalExceptionHandler {
                         exception.getMessage(),
                         ErrorCode.USERNOTFOUND
                 ));
+    }
+    @ExceptionHandler(OvertimeAlreadyProcessedException.class)
+    public ResponseEntity<ErrorResponse<String>> handlleOvertimeAlreadyProcessed(OvertimeAlreadyProcessedException exception){
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.createErrorResponse(
+                        exception.getMessage(),
+                        ErrorCode.OVERTIME_ALREADY_PROCESSED
+                ));
+    }
+    @ExceptionHandler(OvertimeNotFoundException.class)
+    public ResponseEntity<ErrorResponse<String>> handlleOvertimeNotFound(OvertimeNotFoundException exception){
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.createErrorResponse(
+                        exception.getMessage(),
+                        ErrorCode.OVERTIME_NOT_FOUND
+                ));
+
     }
 }

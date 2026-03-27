@@ -41,4 +41,9 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+    public User(UUID id){
+        this.id=id;
+    }
+    @Column(name="department_id" , nullable = false)
+    private UUID departmentId;
 }

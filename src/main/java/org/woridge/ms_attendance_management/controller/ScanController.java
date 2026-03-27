@@ -21,7 +21,7 @@ public class ScanController {
     private final ScanService scanService;
 
 
-    // ✅ Appelé par l'ESP8266 à chaque scan de carte
+    // Appelé par l'ESP8266 à chaque scan de carte
     // POST /api/rfid/scan
     @PostMapping("/scan")
     public ResponseEntity<ScanResponse> scan(@RequestBody ScanRequest request) {
@@ -29,7 +29,7 @@ public class ScanController {
         return ResponseEntity.ok(response);
     }
 
-    // ✅ Admin active le mode enrollment pour un employé
+    // Admin active le mode enrollment pour un employé
     // PUT /api/rfid/mode/enrollment
     @PutMapping("/mode/enrollment")
     public ResponseEntity<String> activateEnrollmentMode(
@@ -40,7 +40,7 @@ public class ScanController {
         );
     }
 
-    // ✅ Admin revient au mode pointage normal
+    // Admin revient au mode pointage normal
     // PUT /api/rfid/mode/attendance
     @PutMapping("/mode/attendance")
     public ResponseEntity<String> activateAttendanceMode() {
@@ -48,7 +48,7 @@ public class ScanController {
         return ResponseEntity.ok("Mode attendance activé");
     }
 
-    // ✅ Voir le mode actuel
+    // Voir le mode actuel
     // GET /api/rfid/mode
     @GetMapping("/mode")
     public ResponseEntity<ScanMode> getCurrentMode() {
