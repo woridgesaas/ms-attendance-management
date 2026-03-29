@@ -34,3 +34,5 @@ build/
 
 ### Environment variables ###
 .env
+/infa/script
+/infra/script/run-dev.bat
