@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import org.woridge.ms_attendance_management.model.LeaveRequest;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
@@ -26,4 +27,6 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("userId") UUID userId,
             @Param("date") LocalDate date
     );
+    List<LeaveRequest> findByUserId(UUID userId);//next task
+
 }

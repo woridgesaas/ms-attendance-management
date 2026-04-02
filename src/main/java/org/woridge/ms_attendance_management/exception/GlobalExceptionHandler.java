@@ -8,6 +8,9 @@ import org.woridge.ms_attendance_management.dto.ErrorResponse;
 import org.woridge.ms_attendance_management.enumeration.ErrorCode;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceFinalStateException;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundException;
+import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
+import org.woridge.ms_attendance_management.exception.leave.InvalidLeaveDatesException;
+import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
@@ -126,4 +129,22 @@ public class GlobalExceptionHandler {
                 ));
 
     }
+    @ExceptionHandler(JustificationRequiredException.class)
+    public ResponseEntity<ErrorResponse> handleJustification(JustificationRequiredException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.createErrorResponse(ex.getMessage(), ErrorCode.JUSTIFICATION_REQUIRED));
+    }
+
+    @ExceptionHandler(InsufficientLeaveBalanceException.class)
+    public ResponseEntity<ErrorResponse> handleBalance(InsufficientLeaveBalanceException ex) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(ErrorResponse.createErrorResponse(ex.getMessage(),ErrorCode.INSUFFICIENT_BALANCE));
+    }
+
+    @ExceptionHandler(InvalidLeaveDatesException.class)
+    public ResponseEntity<ErrorResponse> handleDates(InvalidLeaveDatesException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.createErrorResponse(ex.getMessage(),ErrorCode.INVALID_DATES));
+    }
+
 }

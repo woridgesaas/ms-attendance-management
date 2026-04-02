@@ -31,7 +31,7 @@ public class LeaveDay {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leave_request_id", nullable = false)
     private LeaveRequest leaveRequest;
-
+    
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();

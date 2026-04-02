@@ -33,4 +33,6 @@ public interface JustificationRepository extends JpaRepository<Justification, UU
             @Param("userId") UUID userId,
             @Param("date") LocalDate date
     );
+    Optional<Justification> findByLeaveRequestId(UUID leaveRequestId);//next task
+
 }
