@@ -1,4 +1,5 @@
 package org.woridge.ms_attendance_management.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
@@ -21,12 +22,12 @@ public class Justification {
     private UUID id;
 
     @Column(name = "submission_date")
-    private LocalDateTime submissionDate;
+    private LocalDateTime submissionDate = LocalDateTime.now();
 
     @Column(name = "path", nullable = false)
     private String path;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leave_request_id", nullable = false)
     private LeaveRequest leaveRequest;
 
@@ -36,4 +37,6 @@ public class Justification {
             this.submissionDate = LocalDateTime.now();
         }
     }
+
+
 }

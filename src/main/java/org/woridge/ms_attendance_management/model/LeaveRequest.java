@@ -1,10 +1,13 @@
 package org.woridge.ms_attendance_management.model;
+
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+import org.woridge.ms_attendance_management.enumeration.LeaveType;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,15 +21,10 @@ import java.util.UUID;
 public class LeaveRequest {
 
     @Id
-    @UuidGenerator
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @Column(name = "request_date", nullable = false)
+    @Column(name = "request_date", nullable = false, updatable = false)
     private LocalDateTime requestDate;
 
     @Column(name = "start_date", nullable = false)
@@ -35,33 +33,34 @@ public class LeaveRequest {
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
-    @Column(name = "leave_type", nullable = false, length = 50)
-    private String leaveType;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "leave_type", nullable = false)
+    private LeaveType leaveType;
 
-    @Column(name = "created_at", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+
+    @OneToOne(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Justification justification;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    // Une leave_request a plusieurs leave_days
-    @OneToMany(mappedBy = "leaveRequest", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LeaveDay> leaveDays;
 
-    // Une leave_request a plusieurs validations
-    @OneToMany(mappedBy = "leaveRequest", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Validation> validations;
-
-    @OneToMany(mappedBy = "leaveRequest", fetch = FetchType.LAZY)
-    private List<Justification> justifications;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        this.requestDate = LocalDateTime.now();
+
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
+    @Column(name = "updated_at")
+    private OffsetDateTime updatedAt;
+
 }
