@@ -26,8 +26,9 @@ public class Validation {
     @Column(name = "decision_date", nullable = false)
     private LocalDateTime decisionDate;
 
-    @Column(name = "performed_by", nullable = false)
-    private UUID performedBy;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "performed_by", nullable = false)
+    private User performedBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "leave_request_id", nullable = false)

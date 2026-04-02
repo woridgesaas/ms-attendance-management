@@ -5,6 +5,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.woridge.ms_attendance_management.dto.leave.CreateLeaveRequest;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestFilter;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestResponse;
 import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
 import org.woridge.ms_attendance_management.exception.leave.InvalidLeaveDatesException;
@@ -24,7 +26,9 @@ import org.woridge.ms_attendance_management.service.MinioStorageService;
 import org.woridge.ms_attendance_management.utils.DateUtils;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -96,6 +100,27 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 balance.getRemainingBalance(),
                 justificationPath
         );
+    }
+    @Override
+    public List<LeaveRequestListResponse> getAllLeaveRequests(
+            String userCin,
+            LeaveRequestFilter filter) {
+
+        User user = userRepository.findByCin(userCin)
+                .orElseThrow(() -> new LeaveRequestException(
+                        "Utilisateur introuvable pour le CIN : " + userCin));
+
+        return leaveRequestRepository
+                .findAllByFilters(
+                        user.getId(),
+                        filter.getLeaveType(),
+                        filter.getStatus(),
+                        filter.getStartDate(),
+                        filter.getEndDate()
+                )
+                .stream()
+                .map(leaveRequestMapper::toListResponse)
+                .collect(Collectors.toList());
     }
 
     // --- Méthodes privées ---

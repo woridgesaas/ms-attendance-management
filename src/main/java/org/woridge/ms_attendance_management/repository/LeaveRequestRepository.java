@@ -4,6 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.woridge.ms_attendance_management.enumeration.LeaveType;
 import org.woridge.ms_attendance_management.model.LeaveRequest;
 
 import java.time.LocalDate;
@@ -27,6 +28,23 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("userId") UUID userId,
             @Param("date") LocalDate date
     );
-    List<LeaveRequest> findByUserId(UUID userId);//next task
+    @Query("""
+        SELECT lr FROM LeaveRequest lr
+        LEFT JOIN FETCH lr.validation v
+        LEFT JOIN FETCH v.performedBy
+        WHERE lr.user.id = :userId
+        AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
+        AND (:status IS NULL OR v.decision = :status)
+        AND (:startDate IS NULL OR lr.startDate >= :startDate)
+        AND (:endDate IS NULL OR lr.endDate <= :endDate)
+        ORDER BY lr.requestDate DESC
+    """)
+    List<LeaveRequest> findAllByFilters(
+            @Param("userId")    UUID userId,
+            @Param("leaveType") LeaveType leaveType,
+            @Param("status")    String status,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate")   LocalDate endDate
+    );
 
 }

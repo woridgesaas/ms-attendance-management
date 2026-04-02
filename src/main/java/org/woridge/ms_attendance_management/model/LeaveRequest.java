@@ -43,6 +43,8 @@ public class LeaveRequest {
 
     @OneToOne(mappedBy = "leaveRequest", cascade = CascadeType.ALL, orphanRemoval = true)
     private Justification justification;
+    @OneToOne(mappedBy = "leaveRequest", fetch = FetchType.LAZY)
+    private Validation validation;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
