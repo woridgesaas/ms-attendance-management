@@ -46,4 +46,8 @@ public class User {
     }
     @Column(name="department_id" , nullable = false)
     private UUID departmentId;
+
+    public String getFullName(){
+        return this.firstName +" "+ this.lastName;
+    }
 }

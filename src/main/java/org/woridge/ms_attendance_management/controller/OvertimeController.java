@@ -46,7 +46,7 @@ public class OvertimeController {
         return ResponseEntity.noContent().build();
     }
     @PatchMapping("/{id}/reject")
-    public  ResponseEntity refuse(@PathVariable UUID id, @Valid RefuseOvertimeRequest dto ,HttpServletRequest request){
+    public  ResponseEntity refuse(@PathVariable UUID id, @Valid @RequestBody RefuseOvertimeRequest dto ,HttpServletRequest request){
         String managerCin = request.getHeader("X-User-CIN");
         overtimeService.refuseOvertime(id , managerCin , dto.raison());
         return ResponseEntity.noContent().build();
