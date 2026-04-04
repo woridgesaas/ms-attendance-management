@@ -51,6 +51,15 @@ public class BeanConfig {
                 .build();
     }
     @Bean
+    public TopicExchange overtimeProcessExchange(){
+        return ExchangeBuilder
+                .topicExchange(this.rabbitMQProperties.getExchange())
+                .durable(true)
+                .build();
+    }
+
+
+    @Bean
     public Queue absenceAlertRhQueue() {
         return QueueBuilder
                 .durable("notification.absence.alert.rh.queue")
@@ -62,6 +71,14 @@ public class BeanConfig {
                 .durable("notification.absence.alert.ceo.queue")
                 .build();
     }
+    @Bean
+    public Queue overtimeProcessQueue(){
+        return QueueBuilder
+                .durable("notification.overtime.process.employee.queue")
+                .build();
+    }
+
+
     @Bean
     public Binding absenceAlertRhBinding() {
         return BindingBuilder
@@ -75,6 +92,14 @@ public class BeanConfig {
                 .bind(absenceAlertCeoQueue())
                 .to(notificationExchange())
                 .with(rabbitMQProperties.getRoutingKeys().getAbsenceAlertCeo());
+    }
+    @Bean
+    public Binding overtimeProcessBinding(){
+        return BindingBuilder
+                .bind(overtimeProcessQueue())
+                .to(this.overtimeProcessExchange())
+                .with(this.rabbitMQProperties.getRoutingKeys().getOvertimeProcessedAlert());
+
     }
     @Bean
     public MessageConverter jsonMessageConverter() {

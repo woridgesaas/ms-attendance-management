@@ -12,4 +12,5 @@ public class RabbitMQRoutingKeysProperties {
     private String absenceAlertRh;
     private String absenceAlertCeo;
     private String holidayCreated;
+    private String overtimeProcessedAlert;
 }

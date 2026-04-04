@@ -19,6 +19,7 @@ rabbitmq:
     absence-alert-rh:  notification.absence.alert.rh
     absence-alert-ceo: notification.absence.alert.ceo
     holiday-created: holiday.created
+    overtime-processed-alert: overtime.processed.alert
   holiday-queue: holiday.queue
 server:
   port: 8082

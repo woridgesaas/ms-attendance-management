@@ -8,6 +8,10 @@ import org.woridge.ms_attendance_management.enumeration.OvertimeStatus;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
+import org.woridge.ms_attendance_management.mapper.OvertimeMapper;
+import org.woridge.ms_attendance_management.messaging.event.OvertimeHandleEvent;
+import org.woridge.ms_attendance_management.messaging.publisher.OvertimeHandleEventPublisher;
+import org.woridge.ms_attendance_management.messaging.publisher.implementation.OvertimeHandleEventPublisherImpl;
 import org.woridge.ms_attendance_management.model.Overtime;
 import org.woridge.ms_attendance_management.model.User;
 import org.woridge.ms_attendance_management.repository.OvertimeRepository;
@@ -25,6 +29,8 @@ public class OvertimeServiceImpl implements OvertimeService {
     private OvertimeRepository overtimeRepository;
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private OvertimeHandleEventPublisher overtimeHandleEventPublisher;
 
     @Override
     public List<Overtime> getPendingByDepartment(String cin) {
@@ -45,6 +51,15 @@ public class OvertimeServiceImpl implements OvertimeService {
         ot.setStatus(OvertimeStatus.APPROVED);
         ot.setApprovedBy(manager.getId());
 
+        // --Publish event
+        var employee = ot.getUser();
+        OvertimeHandleEvent event = OvertimeMapper.toOvertimeAlertEvent(
+                ot,
+                employee.getCin() ,
+                employee.getEmail()
+        );
+        System.out.println("Event has been dispatched :)" + event.toString()) ;
+        this.overtimeHandleEventPublisher.publish(event);
         overtimeRepository.save(ot);
     }
 
@@ -58,6 +73,16 @@ public class OvertimeServiceImpl implements OvertimeService {
         ot.setStatus(OvertimeStatus.REJECTED);
         ot.setApprovedBy(manager.getId());
         ot.setManagerComment(raison);
+
+        // --Publish event
+        var employee = ot.getUser();
+        OvertimeHandleEvent event = OvertimeMapper.toOvertimeAlertEvent(
+                ot,
+                employee.getCin() ,
+                employee.getEmail()
+        );
+        System.out.println("Evenet has been dispatched : " + event.toString());
+        this.overtimeHandleEventPublisher.publish(event);
 
         overtimeRepository.save(ot);
     }
