@@ -2,6 +2,7 @@ package org.woridge.ms_attendance_management.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
+import org.woridge.ms_attendance_management.enumeration.LeaveRequestDecision;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -20,8 +21,9 @@ public class Validation {
     @Column(updatable = false, nullable = false)
     private UUID id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "decision", length = 20)
-    private String decision;
+    private LeaveRequestDecision decision;
 
     @Column(name = "decision_date", nullable = false)
     private LocalDateTime decisionDate;

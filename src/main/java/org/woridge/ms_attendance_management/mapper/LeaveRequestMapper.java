@@ -72,7 +72,7 @@ public class LeaveRequestMapper {
                 .numberOfDays(DateUtils.calculateBusinessDays(
                         leaveRequest.getStartDate(), leaveRequest.getEndDate()))
                 .status(leaveRequest.getValidation() != null
-                        ? leaveRequest.getValidation().getDecision()
+                        ? leaveRequest.getValidation().getDecision().name()
                         : "NEW")
                 .approvedBy(approvedBy)
                 .build();
