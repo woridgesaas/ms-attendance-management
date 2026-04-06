@@ -21,4 +21,9 @@ public final class DateUtils {
         }
         return days;
     }
+
+    public static boolean isWeekend(LocalDate date) {
+        DayOfWeek day = date.getDayOfWeek();
+        return day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY;
+    }
 }
