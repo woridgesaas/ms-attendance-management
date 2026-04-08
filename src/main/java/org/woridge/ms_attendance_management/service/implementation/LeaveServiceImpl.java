@@ -9,6 +9,8 @@ import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBal
 import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
 import org.woridge.ms_attendance_management.exception.leave.LeaveRequestException;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
+import org.woridge.ms_attendance_management.mapper.LeaveMapper;
+import org.woridge.ms_attendance_management.messaging.publisher.LeaveHandleEventPublisher;
 import org.woridge.ms_attendance_management.model.*;
 import org.woridge.ms_attendance_management.repository.*;
 import org.woridge.ms_attendance_management.service.LeaveService;
@@ -30,7 +32,7 @@ public class LeaveServiceImpl implements LeaveService {
     private final BalanceRepository balanceRepository;
     private final UserRepository userRepository;
     private final ValidationRepository validationRepository;
-
+    private final LeaveHandleEventPublisher leaveHandleEventPublisher;
     /**
      * Processes the approval of a leave request.
      * <p>
@@ -113,6 +115,10 @@ public class LeaveServiceImpl implements LeaveService {
         leaveRequest.setValidation(validation);
         this.validationRepository.save(validation);
 
+        //6. Notify employe
+        this.leaveHandleEventPublisher.publish(
+               LeaveMapper.toPublishEvent(leaveRequest , remainingSold)
+        );
         return leaveRequest;
 
     }
