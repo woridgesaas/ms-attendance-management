@@ -8,10 +8,7 @@ import org.woridge.ms_attendance_management.dto.ErrorResponse;
 import org.woridge.ms_attendance_management.enumeration.ErrorCode;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceFinalStateException;
 import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundException;
-import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
-import org.woridge.ms_attendance_management.exception.leave.InvalidLeaveDatesException;
-import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
-import org.woridge.ms_attendance_management.exception.leave.OnlyManagerAccessException;
+import org.woridge.ms_attendance_management.exception.leave.*;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
@@ -153,5 +150,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.createErrorResponse(ex.getMessage(), ErrorCode.ACCESS_DENIED));
     }
 
-
+    @ExceptionHandler(LeaveRequestNotFoundException.class)
+    public ResponseEntity<ErrorResponse<String>> handleLeaveRequestNotFoundException(LeaveRequestNotFoundException exception) {
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.createErrorResponse(
+                        exception.getMessage(),
+                        ErrorCode.LEAVES_NOT_FOUND
+                ));
+    }
 }

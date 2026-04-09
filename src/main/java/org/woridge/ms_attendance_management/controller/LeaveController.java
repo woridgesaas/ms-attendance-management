@@ -59,6 +59,22 @@ public class LeaveController {
                         response
                 )
         );
+    }
+    @PostMapping("/{id}/reject")
+    public ResponseEntity<SuccessResponse<ApproveLeaveResponse>> rejectLeave(
+            HttpServletRequest request,
+            @PathVariable UUID id
+    ) {
 
+        String managerCin = request.getHeader("X-User-CIN");
+
+        LeaveRequest leave = leaveService.rejectLeave(id, managerCin);
+
+        return ResponseEntity.ok(
+                SuccessResponse.createSuccessResponse(
+                        "Leave rejected successfully",
+                        LeaveMapper.toApprovalsLeaveResponse(leave)
+                )
+        );
     }
 }
