@@ -3,6 +3,7 @@ package org.woridge.ms_attendance_management.mapper;
 import org.woridge.ms_attendance_management.dto.leave.ApproveLeaveResponse;
 import org.woridge.ms_attendance_management.dto.leave.ApprovedBy;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
+import org.woridge.ms_attendance_management.messaging.event.ApproveLeaveEvent;
 import org.woridge.ms_attendance_management.model.LeaveRequest;
 import org.woridge.ms_attendance_management.utils.DateUtils;
 
@@ -42,4 +43,23 @@ public class LeaveMapper {
                 .build();
     }
 
+
+    public static ApproveLeaveEvent toPublishEvent(LeaveRequest model , Integer remainingSold){
+        return  ApproveLeaveEvent
+                .builder()
+                    .employeeCin(model.getUser().getCin())
+                    .employeeEmail(model.getUser().getEmail())
+                    .employeeFullName(model.getUser().getFullName())
+
+                    .leaveType(model.getLeaveType())
+                    .startDate(model.getStartDate())
+                    .endDate(model.getEndDate())
+
+                    .decisionStatus(model.getValidation().getDecision())
+                    .decisionDate(model.getValidation().getDecisionDate())
+                    .approvedByFullName(model.getValidation().getPerformedBy().getFullName())
+
+                .remainingBalance(remainingSold)
+                .build();
+    }
 }

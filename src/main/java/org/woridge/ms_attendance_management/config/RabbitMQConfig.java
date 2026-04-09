@@ -1,6 +1,7 @@
 package org.woridge.ms_attendance_management.config;
 
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -8,6 +9,8 @@ import org.springframework.amqp.core.TopicExchange;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.woridge.ms_attendance_management.properties.RabbitMQProperties;
@@ -50,5 +53,27 @@ public class RabbitMQConfig {
                 .bind(userQueue())
                 .to(notificationExchange)
                 .with("user.created");
+
+    @Bean
+    public Queue leaveProcessedQueue(){
+        return QueueBuilder
+                .durable("notification.leave.processed.approve.queue").
+                build();
+    }
+
+    @Bean
+    public TopicExchange leaveProcessedExchange(){
+        return ExchangeBuilder
+                .topicExchange(this.properties.getExchange())
+                .durable(true)
+                .build();
+    }
+    @Bean
+    public Binding LeaveProcessedBinding(){
+        return BindingBuilder
+                .bind(leaveProcessedQueue())
+                .to(exchange())
+                .with(this.properties.getRoutingKeys().getLeaveProcessed());
+
     }
 }
