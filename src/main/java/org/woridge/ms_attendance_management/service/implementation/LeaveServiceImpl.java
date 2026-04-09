@@ -6,10 +6,7 @@ import org.springframework.stereotype.Service;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestAdminResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.enumeration.LeaveRequestDecision;
-import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
-import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
-import org.woridge.ms_attendance_management.exception.leave.LeaveRequestException;
-import org.woridge.ms_attendance_management.exception.leave.OnlyManagerAccessException;
+import org.woridge.ms_attendance_management.exception.leave.*;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
 import org.woridge.ms_attendance_management.mapper.LeaveRequestMapper;
 
@@ -142,6 +139,37 @@ public class LeaveServiceImpl implements LeaveService {
                 .stream()
                 .map(l -> leaveRequestMapper.toAdminResponse(l, role))
                 .toList();
+    }
+    @Transactional
+    public LeaveRequest rejectLeave(UUID leaveRequestId, String managerCin) {
+
+        // 1. Get manager
+        User manager = userRepository.findByCin(managerCin)
+                .orElseThrow(() -> new UserNotFoundException("Manager not found"));
+
+        // 2. Get leave
+        LeaveRequest leaveRequest = leaveRequestRepository.findById(leaveRequestId)
+                .orElseThrow(() -> new LeaveRequestNotFoundException("Leave not found"));
+
+        // 3. Check already processed
+        if (leaveRequest.getValidation() != null) {
+            throw new LeaveRequestException("Leave already processed");
+        }
+
+        // 4. Create validation
+        Validation validation = Validation.builder()
+                .leaveRequest(leaveRequest)
+                .performedBy(manager)
+                .decision(LeaveRequestDecision.REJECTED)
+                .decisionDate(LocalDateTime.now())
+                .build();
+
+        //  IMPORTANT
+        leaveRequest.setValidation(validation);
+
+        validationRepository.save(validation);
+
+        return leaveRequest;
     }
 
 }
