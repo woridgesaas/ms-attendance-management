@@ -15,4 +15,6 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     // Chercher un employé par son CIN
     // utilisé pendant l'enrollment pour vérifier qu'il existe
     Optional<User> findByCin(String cin);
+    boolean existsByCin(String cin);
+
 }

@@ -3,12 +3,15 @@ package org.woridge.ms_attendance_management.service.implementation;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestAdminResponse;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.enumeration.LeaveRequestDecision;
 import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
 import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
 import org.woridge.ms_attendance_management.exception.leave.LeaveRequestException;
+import org.woridge.ms_attendance_management.exception.leave.OnlyManagerAccessException;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
+import org.woridge.ms_attendance_management.mapper.LeaveRequestMapper;
 import org.woridge.ms_attendance_management.model.*;
 import org.woridge.ms_attendance_management.repository.*;
 import org.woridge.ms_attendance_management.service.LeaveService;
@@ -30,6 +33,7 @@ public class LeaveServiceImpl implements LeaveService {
     private final BalanceRepository balanceRepository;
     private final UserRepository userRepository;
     private final ValidationRepository validationRepository;
+    private final LeaveRequestMapper leaveRequestMapper;
 
     /**
      * Processes the approval of a leave request.
@@ -116,4 +120,21 @@ public class LeaveServiceImpl implements LeaveService {
         return leaveRequest;
 
     }
+    @Transactional
+    public List<LeaveRequestAdminResponse> getPendingLeaves(String managerCin, String role) {
+
+        if (!"MANAGER".equals(role)) {
+            throw new OnlyManagerAccessException("Only managers can access pending leaves");
+        }
+
+        User manager = userRepository.findByCin(managerCin)
+                .orElseThrow(() -> new UserNotFoundException("Manager not found"));
+
+        return leaveRequestRepository
+                .findPendingRequestsByDepartment(manager.getDepartmentId())
+                .stream()
+                .map(l -> leaveRequestMapper.toAdminResponse(l, role))
+                .toList();
+    }
+
 }

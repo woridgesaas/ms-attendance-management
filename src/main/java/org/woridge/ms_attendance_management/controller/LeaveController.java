@@ -5,15 +5,17 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.woridge.ms_attendance_management.dto.SuccessResponse;
 import org.woridge.ms_attendance_management.dto.leave.ApproveLeaveResponse;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestAdminResponse;
+import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.mapper.LeaveMapper;
+import org.woridge.ms_attendance_management.mapper.LeaveRequestMapper;
+import org.woridge.ms_attendance_management.model.LeaveRequest;
 import org.woridge.ms_attendance_management.service.LeaveService;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -21,6 +23,7 @@ import java.util.UUID;
 @RequestMapping("/leaves")
 public class LeaveController {
     private final LeaveService leaveService;
+    private final LeaveRequestMapper leaveRequestMapper;
 
     @PostMapping("/{id}/approvals")
     public ResponseEntity<SuccessResponse<ApproveLeaveResponse>> approve(HttpServletRequest request ,@PathVariable("id") UUID requestLeaveId){
@@ -30,6 +33,32 @@ public class LeaveController {
                .body(SuccessResponse.createSuccessResponse(
                        "Leave approves",
                        LeaveMapper.toApprovalsLeaveResponse(leaveRequest)));
+
+    }
+    private String getHeader(HttpServletRequest request, String key) {
+        String value = request.getHeader(key);
+        if (value == null) {
+            value = request.getHeader(key.toLowerCase());
+        }
+        return value;
+    }
+    @GetMapping("/pending")
+    public ResponseEntity<SuccessResponse<List<LeaveRequestAdminResponse>>> getPendingLeaves(
+            HttpServletRequest request
+    ) {
+
+        String managerCin = getHeader(request, "X-User-CIN");
+        String role = getHeader(request, "X-User-Role");
+
+        List<LeaveRequestAdminResponse> response =
+                leaveService.getPendingLeaves(managerCin, role);
+
+        return ResponseEntity.ok(
+                SuccessResponse.createSuccessResponse(
+                        "Pending leave requests retrieved successfully",
+                        response
+                )
+        );
 
     }
 }
