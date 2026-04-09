@@ -47,4 +47,14 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("endDate")   LocalDate endDate
     );
 
+    @Query("""
+    SELECT lr FROM LeaveRequest lr
+    JOIN FETCH lr.user u
+    LEFT JOIN FETCH lr.validation v
+    WHERE u.departmentId = :departmentId
+    ORDER BY lr.requestDate DESC
+""")
+    List<LeaveRequest> findPendingRequestsByDepartment(
+            @Param("departmentId") UUID departmentId
+    );
 }

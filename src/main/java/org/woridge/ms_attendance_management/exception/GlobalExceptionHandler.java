@@ -11,6 +11,7 @@ import org.woridge.ms_attendance_management.exception.absence.AbsenceNotFoundExc
 import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
 import org.woridge.ms_attendance_management.exception.leave.InvalidLeaveDatesException;
 import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
+import org.woridge.ms_attendance_management.exception.leave.OnlyManagerAccessException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
@@ -146,5 +147,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.createErrorResponse(ex.getMessage(),ErrorCode.INVALID_DATES));
     }
+    @ExceptionHandler(OnlyManagerAccessException.class)
+    public ResponseEntity<ErrorResponse> handleOnlyManager(OnlyManagerAccessException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ErrorResponse.createErrorResponse(ex.getMessage(), ErrorCode.ACCESS_DENIED));
+    }
+
 
 }

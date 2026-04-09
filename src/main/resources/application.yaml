@@ -14,7 +14,7 @@ spring:
     username: ${RABBITMQ_USER}
     password: ${RABBITMQ_PASSWORD}
 rabbitmq:
-  exchange: woridge.exchange
+  exchange: notification.exchange
   routing-keys:
     absence-alert-rh:  notification.absence.alert.rh
     absence-alert-ceo: notification.absence.alert.ceo
@@ -22,6 +22,8 @@ rabbitmq:
     overtime-processed-alert: overtime.processed.alert
     leave-processed: leave.processed.alert #aprove/refuse
   holiday-queue: holiday.queue
+services:
+  auth-url: ${AUTH_SERVICE_URL}
 server:
   port: 8082
   address: 0.0.0.0
