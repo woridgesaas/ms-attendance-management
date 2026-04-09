@@ -53,7 +53,7 @@ public class RabbitMQConfig {
                 .bind(userQueue())
                 .to(notificationExchange)
                 .with("user.created");
-
+    }
     @Bean
     public Queue leaveProcessedQueue(){
         return QueueBuilder
@@ -72,7 +72,7 @@ public class RabbitMQConfig {
     public Binding LeaveProcessedBinding(){
         return BindingBuilder
                 .bind(leaveProcessedQueue())
-                .to(exchange())
+                .to(leaveProcessedExchange())
                 .with(this.properties.getRoutingKeys().getLeaveProcessed());
 
     }
