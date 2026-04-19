@@ -57,4 +57,15 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     List<LeaveRequest> findPendingRequestsByDepartment(
             @Param("departmentId") UUID departmentId
     );
+    @Query("""
+    SELECT COUNT(l) > 0 FROM LeaveRequest l
+    WHERE l.user.id = :userId
+    AND l.startDate <= :endDate
+    AND l.endDate >= :startDate
+""")
+    boolean existsOverlap(
+            @Param("userId") UUID userId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

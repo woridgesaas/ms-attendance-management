@@ -4,6 +4,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestFilter;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestResponse;
+import org.woridge.ms_attendance_management.dto.leave.SimulateLeaveResponse;
 import org.woridge.ms_attendance_management.enumeration.LeaveType;
 
 import java.time.LocalDate;
@@ -15,8 +16,15 @@ public interface LeaveRequestService {
             String data,
             MultipartFile justificationFile
     );
+
     List<LeaveRequestListResponse> getAllLeaveRequests(
             String userCin,
             LeaveRequestFilter filter
     );
+
+    SimulateLeaveResponse simulate(
+            String userCin,
+            LeaveType leaveType,
+            LocalDate startDate,
+            LocalDate endDate);
 }
