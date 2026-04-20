@@ -28,6 +28,7 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("userId") UUID userId,
             @Param("date") LocalDate date
     );
+
     @Query("""
     SELECT lr FROM LeaveRequest lr
     LEFT JOIN FETCH lr.validation v
@@ -52,12 +53,12 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
     );
 
     @Query("""
-    SELECT lr FROM LeaveRequest lr
-    JOIN FETCH lr.user u
-    LEFT JOIN FETCH lr.validation v
-    WHERE u.departmentId = :departmentId
-    ORDER BY lr.requestDate DESC
-""")
+        SELECT lr FROM LeaveRequest lr
+        JOIN FETCH lr.user u
+        LEFT JOIN FETCH lr.validation v
+        WHERE u.departmentId = :departmentId
+        ORDER BY lr.requestDate DESC
+    """)
     List<LeaveRequest> findPendingRequestsByDepartment(
             @Param("departmentId") UUID departmentId
     );
@@ -72,4 +73,54 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
+
+    //  RH voit toutes les demandes sans validation (PENDING)
+    @Query("""
+        SELECT lr FROM LeaveRequest lr
+        JOIN FETCH lr.user u
+        LEFT JOIN FETCH lr.validation v
+        ORDER BY lr.requestDate DESC
+    """)
+    List<LeaveRequest> findAllPendingRequests();
+
+    // Congés APPROUVÉS d'un département pour un mois donné (pour le calendrier Manager)
+    @Query("""
+    SELECT lr FROM LeaveRequest lr
+    JOIN FETCH lr.user u
+    JOIN FETCH lr.validation v
+    WHERE u.departmentId = :departmentId
+      AND v.decision = 'APPROVED'
+      AND lr.startDate <= :endOfMonth
+      AND lr.endDate >= :startOfMonth
+    ORDER BY lr.startDate ASC
+""")
+    List<LeaveRequest> findApprovedLeavesByDepartmentAndMonth(
+            @Param("departmentId") UUID departmentId,
+            @Param("startOfMonth") LocalDate startOfMonth,
+            @Param("endOfMonth") LocalDate endOfMonth
+    );
+
+    // Congés APPROUVÉS de TOUS les départements pour un mois (pour le calendrier RH)
+    @Query("""
+    SELECT lr FROM LeaveRequest lr
+    JOIN FETCH lr.user u
+    JOIN FETCH lr.validation v
+    WHERE v.decision = 'APPROVED'
+      AND lr.startDate <= :endOfMonth
+      AND lr.endDate >= :startOfMonth
+    ORDER BY u.departmentId ASC, lr.startDate ASC
+""")
+    List<LeaveRequest> findAllApprovedLeavesByMonth(
+            @Param("startOfMonth") LocalDate startOfMonth,
+            @Param("endOfMonth") LocalDate endOfMonth
+    );
+
+    //  Liste des department IDs distincts ayant des congés approuvés
+    @Query("""
+    SELECT DISTINCT u.departmentId FROM LeaveRequest lr
+    JOIN lr.user u
+    JOIN lr.validation v
+    WHERE v.decision = 'APPROVED'
+""")
+    List<UUID> findDistinctDepartmentIdsWithApprovedLeaves();
 }
