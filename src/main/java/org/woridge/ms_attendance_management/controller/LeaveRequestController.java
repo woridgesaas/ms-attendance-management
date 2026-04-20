@@ -1,6 +1,7 @@
 package org.woridge.ms_attendance_management.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestFilter;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestResponse;
+import org.woridge.ms_attendance_management.dto.leave.SimulateLeaveResponse;
+import org.woridge.ms_attendance_management.enumeration.LeaveType;
 import org.woridge.ms_attendance_management.service.LeaveRequestService;
+
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -38,5 +43,15 @@ public class LeaveRequestController {
         return ResponseEntity.ok(
                 leaveRequestService.getAllLeaveRequests(userCin, filter)
         );
+    }
+    @GetMapping("/simulate")
+    public ResponseEntity<SimulateLeaveResponse> simulate(
+            @RequestParam LeaveType leaveType,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestHeader("X-User-CIN") String userCin) {
+
+        return ResponseEntity.ok(
+                leaveRequestService.simulate(userCin, leaveType, startDate, endDate));
     }
 }

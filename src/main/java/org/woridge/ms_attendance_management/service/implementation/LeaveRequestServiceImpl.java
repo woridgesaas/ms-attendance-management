@@ -4,10 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.woridge.ms_attendance_management.dto.leave.CreateLeaveRequest;
-import org.woridge.ms_attendance_management.dto.leave.LeaveRequestFilter;
-import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
-import org.woridge.ms_attendance_management.dto.leave.LeaveRequestResponse;
+import org.woridge.ms_attendance_management.dto.leave.*;
+import org.woridge.ms_attendance_management.enumeration.LeaveType;
 import org.woridge.ms_attendance_management.exception.leave.InsufficientLeaveBalanceException;
 import org.woridge.ms_attendance_management.exception.leave.InvalidLeaveDatesException;
 import org.woridge.ms_attendance_management.exception.leave.JustificationRequiredException;
@@ -57,7 +55,7 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                         "Utilisateur introuvable pour le CIN : " + userCin));
 
         // 2. Validation des dates
-        validateDates(dto.getStartDate(), dto.getEndDate());
+        validateDates(dto.getStartDate(), dto.getEndDate(), user.getId());
 
         // 3. Calcul des jours
         int numberOfDays = DateUtils.calculateBusinessDays(dto.getStartDate(), dto.getEndDate());
@@ -122,12 +120,51 @@ public class LeaveRequestServiceImpl implements LeaveRequestService {
                 .map(leaveRequestMapper::toListResponse)
                 .collect(Collectors.toList());
     }
+    @Override
+    public SimulateLeaveResponse simulate(
+            String userCin,
+            LeaveType leaveType,
+            LocalDate startDate,
+            LocalDate endDate) {
+
+        // 1. Récupérer l'utilisateur
+        User user = userRepository.findByCin(userCin)
+                .orElseThrow(() -> new LeaveRequestException(
+                        "Utilisateur introuvable pour le CIN : " + userCin));
+
+        // 2. Validation des dates
+        validateDates(startDate, endDate, user.getId());
+
+        // 3. Calcul des jours ouvrables (weekends + holidays exclus)
+        int numberOfDays = DateUtils.calculateBusinessDays(startDate, endDate);
+
+        // 4. Récupérer le solde
+        Balance balance = getOrThrowBalance(user.getId());
+
+        // 5. Retourner la simulation
+        return SimulateLeaveResponse.builder()
+                .numberOfDays(numberOfDays)
+                .remainingBalance(balance.getRemainingBalance() - numberOfDays)
+                .build();
+    }
 
     // --- Méthodes privées ---
 
-    private void validateDates(LocalDate start, LocalDate end) {
+    private void validateDates(LocalDate start, LocalDate end, UUID userId) {
+        // Date logique
         if (!end.isAfter(start)) {
-            throw new InvalidLeaveDatesException("leave date must be after start date");
+            throw new InvalidLeaveDatesException("La date de fin doit être après la date de début");
+        }
+
+        // Pas dans le passé
+        if (start.isBefore(LocalDate.now())) {
+            throw new InvalidLeaveDatesException("La date de début ne peut pas être dans le passé");
+        }
+
+        // Chevauchement
+        boolean overlap = leaveRequestRepository.existsOverlap(userId, start, end);
+        if (overlap) {
+            throw new InvalidLeaveDatesException("Vous avez déjà un congé sur cette période");
         }
     }
 

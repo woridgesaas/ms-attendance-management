@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface BalanceRepository extends JpaRepository<Balance, UUID> {
 
     Optional<Balance> findByUserIdAndYear(UUID userId, int year);
+    Optional<Balance> findByUserId(UUID userId);
 }
