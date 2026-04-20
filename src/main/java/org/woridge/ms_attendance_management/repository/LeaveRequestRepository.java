@@ -29,16 +29,20 @@ public interface LeaveRequestRepository extends JpaRepository<LeaveRequest, UUID
             @Param("date") LocalDate date
     );
     @Query("""
-        SELECT lr FROM LeaveRequest lr
-        LEFT JOIN FETCH lr.validation v
-        LEFT JOIN FETCH v.performedBy
-        WHERE lr.user.id = :userId
-        AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
-        AND (:status IS NULL OR v.decision = :status)
-        AND (:startDate IS NULL OR lr.startDate >= :startDate)
-        AND (:endDate IS NULL OR lr.endDate <= :endDate)
-        ORDER BY lr.requestDate DESC
-    """)
+    SELECT lr FROM LeaveRequest lr
+    LEFT JOIN FETCH lr.validation v
+    LEFT JOIN FETCH v.performedBy
+    WHERE lr.user.id = :userId
+    AND (:leaveType IS NULL OR lr.leaveType = :leaveType)
+    AND (
+        :status IS NULL
+        OR (:status = 'NEW' AND v IS NULL)
+        OR (:status != 'NEW' AND v IS NOT NULL AND CAST(v.decision AS string) = :status)
+    )
+    AND (:startDate IS NULL OR lr.startDate >= :startDate)
+    AND (:endDate IS NULL OR lr.endDate <= :endDate)
+    ORDER BY lr.requestDate DESC
+""")
     List<LeaveRequest> findAllByFilters(
             @Param("userId")    UUID userId,
             @Param("leaveType") LeaveType leaveType,
