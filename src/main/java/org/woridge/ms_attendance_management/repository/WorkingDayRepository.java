@@ -29,4 +29,32 @@ public interface WorkingDayRepository extends JpaRepository<WorkingDay, UUID> {
     );
 
     Optional<WorkingDay> findByPerformedBy_IdAndDate(UUID userId, LocalDate date);
+
+    //  Tous les WorkingDays dans une plage de dates (pour RH)
+    @Query("""
+    SELECT wd FROM WorkingDay wd
+    JOIN FETCH wd.performedBy u
+    LEFT JOIN FETCH wd.overtime
+    WHERE wd.date BETWEEN :startDate AND :endDate
+    ORDER BY wd.date DESC, u.lastName ASC
+""")
+    List<WorkingDay> findAllByDateRange(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    // WorkingDays d'un département (pour Manager)
+    @Query("""
+    SELECT wd FROM WorkingDay wd
+    JOIN FETCH wd.performedBy u
+    LEFT JOIN FETCH wd.overtime
+    WHERE u.departmentId = :departmentId
+      AND wd.date BETWEEN :startDate AND :endDate
+    ORDER BY wd.date DESC, u.lastName ASC
+""")
+    List<WorkingDay> findByDepartmentAndDateRange(
+            @Param("departmentId") UUID departmentId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

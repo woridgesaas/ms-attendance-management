@@ -8,6 +8,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.woridge.ms_attendance_management.dto.SuccessResponse;
 import org.woridge.ms_attendance_management.dto.leave.ApproveLeaveResponse;
+import org.woridge.ms_attendance_management.dto.leave.CalendarLeaveResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestAdminResponse;
 import org.woridge.ms_attendance_management.dto.leave.LeaveRequestListResponse;
 import org.woridge.ms_attendance_management.mapper.LeaveMapper;
@@ -76,5 +77,31 @@ public class LeaveController {
                         LeaveMapper.toApprovalsLeaveResponse(leave)
                 )
         );
+    }
+
+    @GetMapping("/calendar")
+    public ResponseEntity<SuccessResponse<List<CalendarLeaveResponse>>> getCalendarLeaves(
+            HttpServletRequest request,
+            @RequestParam int year,
+            @RequestParam int month,
+            @RequestParam(required = false) UUID departmentId
+    ) {
+        String userCin = getHeader(request, "X-User-CIN");
+        String role = getHeader(request, "X-User-Role");
+
+        List<CalendarLeaveResponse> response =
+                leaveService.getApprovedLeavesForCalendar(userCin, role, year, month, departmentId);
+
+        return ResponseEntity.ok(
+                SuccessResponse.createSuccessResponse(
+                        "Calendar leaves retrieved successfully", response));
+    }
+
+    @GetMapping("/calendar/departments")
+    public ResponseEntity<SuccessResponse<List<UUID>>> getDepartments() {
+        List<UUID> departments = leaveService.getDepartmentsWithApprovedLeaves();
+        return ResponseEntity.ok(
+                SuccessResponse.createSuccessResponse(
+                        "Departments retrieved successfully", departments));
     }
 }
