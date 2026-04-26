@@ -1,6 +1,6 @@
 services:
 
-  database:
+  woridge.db.attendance:
     image: postgres:16
     container_name: "ms-attendance-database"
     env_file:
@@ -17,6 +17,7 @@ services:
       retries: 5
     networks:
       - woridge-external-network
+      - provisioning-service-network
 
   backend:
     build:
@@ -33,7 +34,7 @@ services:
       - "${SERVER_PORT}:8080"
     restart: always
     depends_on:
-      database:
+      woridge.db.attendance:
         condition: service_healthy
     networks:
       - woridge-external-network
@@ -43,4 +44,7 @@ volumes:
 
 networks:
   woridge-external-network:
+    external: true
+
+  provisioning-service-network:
     external: true
