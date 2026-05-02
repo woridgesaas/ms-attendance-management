@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.woridge.ms_attendance_management.dto.rfid.ScanRequest;
 import org.woridge.ms_attendance_management.dto.rfid.ScanResponse;
+import org.woridge.ms_attendance_management.exception.rfid.DayAlreadyCompleteException;
 import org.woridge.ms_attendance_management.model.RfidCard;
 import org.woridge.ms_attendance_management.model.WorkingDay;
 import org.woridge.ms_attendance_management.exception.rfid.RfidCardNotFoundException;
@@ -48,29 +49,28 @@ public class AttendanceStrategyImpl implements ScanStrategy {
         if (existingDay.isPresent()) {
             WorkingDay workingDay = existingDay.get();
 
-            // 3. Anti-double-scan
-            LocalTime lastAction = workingDay.getCheckOutTime() != null
-                    ? workingDay.getCheckOutTime()
-                    : workingDay.getCheckInTime();
+            // 3. Journée déjà complète (check-in + check-out faits)
+            if (workingDay.getCheckOutTime() != null) {
+                throw new DayAlreadyCompleteException(card.getEmployee().getId());
+            }
 
+            // 4. Anti-double-scan (trop rapide après check-in)
             long minutesSinceLast = Duration.between(
-                    lastAction, LocalTime.now()
+                    workingDay.getCheckInTime(), LocalTime.now()
             ).toMinutes();
 
             if (minutesSinceLast < MIN_DELAY_MINUTES) {
                 throw new ScanTooFastException();
             }
 
-            // 4. CHECK_OUT
-            if (workingDay.getCheckOutTime() == null) {
-                workingDay.setCheckOutTime(LocalTime.now());
-                workingDayRepository.save(workingDay);
-                overtimeProcessingService.detectAndCreate(workingDay);
-                return rfidCardMapper.toCheckOutResponse(card, workingDay);
-            }
+            // 5. CHECK_OUT
+            workingDay.setCheckOutTime(LocalTime.now());
+            workingDayRepository.save(workingDay);
+            overtimeProcessingService.detectAndCreate(workingDay);
+            return rfidCardMapper.toCheckOutResponse(card, workingDay);
         }
 
-        // 5. CHECK_IN
+        // 6. CHECK_IN (premier scan de la journée)
         WorkingDay newDay = new WorkingDay();
         newDay.setDate(LocalDate.now());
         newDay.setCheckInTime(LocalTime.now());
