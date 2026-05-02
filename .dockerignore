@@ -18,6 +18,7 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Environment / Secrets
 .env
@@ -29,3 +30,4 @@ compose*.yaml
 
 # Test reports
 surefire-reports/
+
