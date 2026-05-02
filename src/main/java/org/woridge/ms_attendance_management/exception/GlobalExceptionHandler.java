@@ -12,16 +12,12 @@ import org.woridge.ms_attendance_management.exception.leave.*;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeAlreadyProcessedException;
 import org.woridge.ms_attendance_management.exception.overtime.OvertimeNotFoundException;
 import org.woridge.ms_attendance_management.exception.parameter.BusinessParameterException;
-import org.woridge.ms_attendance_management.exception.rfid.EmployeeAlreadyHasCardException;
-import org.woridge.ms_attendance_management.exception.rfid.RfidCardAlreadyExistsException;
-import org.woridge.ms_attendance_management.exception.rfid.RfidCardNotFoundException;
-import org.woridge.ms_attendance_management.exception.rfid.ScanTooFastException;
+import org.woridge.ms_attendance_management.exception.rfid.*;
 import org.woridge.ms_attendance_management.exception.user.UserNotFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
-    // ─── RFID ─────────────────────────────────────────────────────
+// ─── RFID ─────────────────────────────────────────────────────
 
     @ExceptionHandler(RfidCardNotFoundException.class)
     public ResponseEntity<ErrorResponse<String>> handleRfidCardNotFoundException(
@@ -64,6 +60,17 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.createErrorResponse(
                         ex.getMessage(),
                         ErrorCode.SCAN_TOO_FAST
+                ));
+    }
+
+    @ExceptionHandler(DayAlreadyCompleteException.class)
+    public ResponseEntity<ErrorResponse<String>> handleDayAlreadyCompleteException(
+            DayAlreadyCompleteException ex) {
+        return ResponseEntity
+                .status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.createErrorResponse(
+                        ex.getMessage(),
+                        ErrorCode.DAY_ALREADY_COMPLETE
                 ));
     }
 

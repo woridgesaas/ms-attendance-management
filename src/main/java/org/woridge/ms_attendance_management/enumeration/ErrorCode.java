@@ -7,6 +7,7 @@ public enum ErrorCode {
     RFID_CARD_ALREADY_EXISTS,
     EMPLOYEE_ALREADY_HAS_CARD,
     SCAN_TOO_FAST,
+    DAY_ALREADY_COMPLETE,
 
     // Absence
     ABSENCE_NOT_FOUND,
