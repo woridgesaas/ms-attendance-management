@@ -57,3 +57,10 @@ logging:
     rollingpolicy:
       max-history: 3
       max-file-size: 10MB
+
+tenant:
+  database:
+    host: woridge.db.attendance
+    port: ${POSTGRES_PORT}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
