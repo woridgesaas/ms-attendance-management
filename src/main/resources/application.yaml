@@ -21,7 +21,9 @@ rabbitmq:
     holiday-created: holiday.created
     overtime-processed-alert: overtime.processed.alert
     leave-processed: leave.processed.alert #aprove/refuse
+    tenant-ready: tenant.ready.ms-attendance
   holiday-queue: holiday.queue
+  provisioning-queue: q.attendance.provisioning
 services:
   auth-url: ${AUTH_SERVICE_URL}
 server:
@@ -46,3 +48,12 @@ attendance:
     daily-max-hours: 9
     weekly-max-hours: 40
     monthly-max-hours: 98
+
+logging:
+  level:
+    root: INFO
+    org.woridge: DEBUG
+  logback:
+    rollingpolicy:
+      max-history: 3
+      max-file-size: 10MB

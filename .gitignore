@@ -36,3 +36,7 @@ build/
 .env
 /infa/script
 /infra/script/run-dev.bat
+
+# Logs
+*.log
+logs/
