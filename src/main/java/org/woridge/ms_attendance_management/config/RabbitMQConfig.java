@@ -11,6 +11,7 @@ import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.core.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.woridge.ms_attendance_management.properties.RabbitMQProperties;
@@ -20,6 +21,10 @@ import org.woridge.ms_attendance_management.properties.RabbitMQProperties;
 public class RabbitMQConfig {
 
     private final RabbitMQProperties properties;
+
+    @Value("${rabbitmq.provisioning-queue}")
+    private String provisioningQueue;
+
     @Bean
     public Queue userQueue() {
         return new Queue("user.queue");
@@ -75,5 +80,26 @@ public class RabbitMQConfig {
                 .to(leaveProcessedExchange())
                 .with(this.properties.getRoutingKeys().getLeaveProcessed());
 
+    }
+
+    @Bean
+    public Queue tenantReadyQueue(){
+        return QueueBuilder
+                .durable(this.provisioningQueue)
+                    .build();
+    }
+    @Bean
+    public TopicExchange tenantReadyExchange(){
+        return ExchangeBuilder
+                .topicExchange(this.properties.getExchange())
+                .durable(true)
+                .build();
+    }
+    @Bean
+    public Binding provisioningBinding(){
+        return BindingBuilder
+                .bind(tenantReadyQueue())
+                    .to(tenantReadyExchange())
+                        .with(this.properties.getRoutingKeys().getTenantReady());
     }
 }
