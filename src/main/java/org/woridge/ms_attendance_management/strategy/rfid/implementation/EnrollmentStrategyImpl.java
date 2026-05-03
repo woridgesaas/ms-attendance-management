@@ -16,6 +16,8 @@ import org.woridge.ms_attendance_management.repository.RfidCardRepository;
 import org.woridge.ms_attendance_management.repository.UserRepository;
 import org.woridge.ms_attendance_management.strategy.rfid.ScanStrategy;
 
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 @Component
@@ -33,23 +35,34 @@ public class EnrollmentStrategyImpl implements ScanStrategy {
     @Override
     public ScanResponse handle(ScanRequest request) {
 
-        // 1. Carte déjà enregistrée ?
-        if (rfidCardRepository.findByUidAndActiveTrue(request.getUid()).isPresent()) {
-            throw new RfidCardAlreadyExistsException(request.getUid());
+        // 1. Carte avec cet UID existe déjà (active OU désactivée) ?
+        // Si désactivée → la réactiver plutôt que créer une nouvelle
+        Optional<RfidCard> existingCard = rfidCardRepository.findByUid(request.getUid());
+
+        if (existingCard.isPresent()) {
+            RfidCard card = existingCard.get();
+            if (card.isActive()) {
+                throw new RfidCardAlreadyExistsException(request.getUid());
+            }
+            // Carte désactivée → réactiver et réassigner
+            card.setEmployee(userRepository.findById(pendingEmployeeId)
+                    .orElseThrow(() -> new RuntimeException("Employé introuvable : " + pendingEmployeeId)));
+            card.setActive(true);
+            card.setEnrolledAt(OffsetDateTime.now());
+            rfidCardRepository.save(card);
+            return rfidCardMapper.toEnrolledResponse(card);
         }
 
         // 2. Employé existe ?
         User employee = userRepository.findById(pendingEmployeeId)
-                .orElseThrow(() -> new RuntimeException(
-                        "Employé introuvable : " + pendingEmployeeId
-                ));
+                .orElseThrow(() -> new RuntimeException("Employé introuvable : " + pendingEmployeeId));
 
-        // 3. Employé a déjà une carte ?
-        if (rfidCardRepository.existsByEmployeeId(pendingEmployeeId)) {
+        // 3. Employé a déjà une carte active ?
+        if (rfidCardRepository.existsByEmployeeIdAndActiveTrue(pendingEmployeeId)) {
             throw new EmployeeAlreadyHasCardException(pendingEmployeeId);
         }
 
-        // 4. Associer la carte à l'employé
+        // 4. Créer nouvelle carte
         RfidCard card = new RfidCard();
         card.setUid(request.getUid());
         card.setEmployee(employee);
@@ -57,4 +70,5 @@ public class EnrollmentStrategyImpl implements ScanStrategy {
 
         return rfidCardMapper.toEnrolledResponse(card);
     }
+
 }

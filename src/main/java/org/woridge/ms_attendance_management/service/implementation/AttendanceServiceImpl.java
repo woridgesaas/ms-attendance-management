@@ -204,7 +204,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 : null;
 
         // Carte RFID ?
-        boolean hasRfidCard = rfidCardRepository.existsByEmployeeId(employee.getId());
+        boolean hasRfidCard = rfidCardRepository.existsByEmployeeIdAndActiveTrue(employee.getId());
 
         return AttendanceListResponse.builder()
                 .workingDayId(wd.getId())
