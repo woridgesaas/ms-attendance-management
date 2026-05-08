@@ -60,7 +60,7 @@ logging:
 
 tenant:
   database:
-    host: woridge.db.attendance
+    host: woridge.attendance.db
     port: ${POSTGRES_PORT}
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
