@@ -1,8 +1,8 @@
 services:
 
-  woridge.db.attendance:
+  woridge.attendance.db:
     image: postgres:16
-    container_name: "ms-attendance-database"
+    container_name: "attendance_management_db"
     env_file:
       - .env
     ports:
@@ -27,14 +27,14 @@ services:
     env_file:
       - .env
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://woridge.db.attendance:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_URL: ${POSTGRES_URL}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "${SERVER_PORT}:8080"
     restart: always
     depends_on:
-      woridge.db.attendance:
+      woridge.attendance.db:
         condition: service_healthy
     networks:
       - woridge-external-network
