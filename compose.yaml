@@ -1,6 +1,6 @@
 services:
 
-  woridge.attendance.db:
+  woridge.db.attendance:
     image: postgres:16
     container_name: "attendance_management_db"
     env_file:
@@ -34,7 +34,7 @@ services:
       - "${SERVER_PORT}:8080"
     restart: always
     depends_on:
-      woridge.attendance.db:
+      woridge.db.attendance:
         condition: service_healthy
     networks:
       - woridge-external-network
