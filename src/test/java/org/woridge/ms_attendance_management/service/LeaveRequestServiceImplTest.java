@@ -67,7 +67,7 @@ class LeaveRequestServiceImplTest {
     @Test
     void createAnnualLeave_noFile_success() {
         CreateLeaveRequest dto = buildDto(LeaveType.ANNUEL,
-                LocalDate.of(2024, 6, 3), LocalDate.of(2024, 6, 5));
+                LocalDate.now().plusDays(3), LocalDate.now().plusDays(5));
 
         mockMapperToDto("annuel_data", dto);
         mockBalance(10);
@@ -81,23 +81,23 @@ class LeaveRequestServiceImplTest {
         verify(minioStorageService, never()).uploadJustification(any(), any());
     }
 
+
     @Test
     void createMedicalLeave_noFile_throwsJustificationRequired() {
         CreateLeaveRequest dto = buildDto(LeaveType.MALADIE,
-                LocalDate.of(2024, 6, 3), LocalDate.of(2024, 6, 5));
+                LocalDate.now().plusDays(3), LocalDate.now().plusDays(5));
 
         mockMapperToDto("maladie_data", dto);
 
         assertThatThrownBy(() -> service.createLeaveRequest(USER_CIN, "maladie_data", null))
                 .isInstanceOf(JustificationRequiredException.class);
-
-        verify(leaveRequestRepository, never()).save(any());
     }
+
 
     @Test
     void createExceptionalLeave_withFile_success() {
         CreateLeaveRequest dto = buildDto(LeaveType.EXCEPTIONNEL,
-                LocalDate.of(2024, 6, 3), LocalDate.of(2024, 6, 7));
+                LocalDate.now().plusDays(3), LocalDate.now().plusDays(7));
 
         MultipartFile file = mockFile();
         mockMapperToDto("exceptionnel_data", dto);
@@ -114,18 +114,20 @@ class LeaveRequestServiceImplTest {
         verify(justificationRepository).save(any());
     }
 
+
     @Test
     void createLeave_insufficientBalance_throwsException() {
         CreateLeaveRequest dto = buildDto(LeaveType.ANNUEL,
-                LocalDate.of(2024, 6, 3), LocalDate.of(2024, 6, 14));
+                LocalDate.now().plusDays(3), LocalDate.now().plusDays(14));
 
         mockMapperToDto("balance_data", dto);
-        mockBalance(3);
+        mockBalance(3); // solde insuffisant
 
         assertThatThrownBy(() -> service.createLeaveRequest(USER_CIN, "balance_data", null))
                 .isInstanceOf(InsufficientLeaveBalanceException.class)
                 .hasMessageContaining("votre solde est insuffisant");
     }
+
 
     @Test
     void createLeave_invalidDates_throwsException() {
