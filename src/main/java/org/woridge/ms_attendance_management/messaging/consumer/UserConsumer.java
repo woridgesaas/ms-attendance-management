@@ -1,15 +1,16 @@
 package org.woridge.ms_attendance_management.messaging.consumer;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.UUID;
+
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 import org.woridge.ms_attendance_management.messaging.event.UserCreatedEvent;
 import org.woridge.ms_attendance_management.model.User;
 import org.woridge.ms_attendance_management.repository.UserRepository;
 
-import java.util.UUID;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
@@ -22,7 +23,7 @@ public class UserConsumer {
     }
     @RabbitListener(queues = "user.queue")
     public void consume(UserCreatedEvent event) {
-
+        log.info("Receive user created event {}" , event.toString());
         try {
 
             if (userRepository.existsByCin(event.getCin())) {
